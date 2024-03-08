@@ -7,10 +7,10 @@
         <version>1.0-SNAPSHOT</version>
     </parent>
 
-    <artifactId>realTime-common</artifactId>
+    <artifactId>realTime-dws</artifactId>
     <packaging>jar</packaging>
 
-    <name>realTime-common</name>
+    <name>realTime-dws</name>
     <url>http://maven.apache.org</url>
 
     <properties>

@@ -11,6 +11,9 @@
   <url>http://maven.apache.org</url>
   <modules>
     <module>realTime-common</module>
+    <module>realTime-dim</module>
+    <module>realTime-dws</module>
+    <module>realTime-dwd</module>
   </modules>
 
   <properties>
