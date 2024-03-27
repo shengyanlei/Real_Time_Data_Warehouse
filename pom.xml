@@ -14,6 +14,7 @@
     <module>realTime-dim</module>
     <module>realTime-dws</module>
     <module>realTime-dwd</module>
+    <module>realTime-ods</module>
   </modules>
 
   <properties>
