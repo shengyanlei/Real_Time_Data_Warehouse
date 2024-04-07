@@ -22,7 +22,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <flink.version>1.17.1</flink.version>
+    <flink.version>1.14.0</flink.version>
     <scala.versio>2.12</scala.versio>
     <hadoop.version>3.3.4</hadoop.version>
     <flink-cdc.version>2.4.0</flink-cdc.version>
@@ -37,5 +37,12 @@
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <!-- https://mvnrepository.com/artifact/org.apache.flink/flink-connector-kafka -->
+    <dependency>
+      <groupId>org.apache.flink</groupId>
+      <artifactId>flink-connector-kafka_2.12</artifactId>
+      <version>1.14.0</version>
+    </dependency>
   </dependencies>
+
 </project>
