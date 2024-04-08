@@ -1,10 +1,5 @@
 package com.shyl.constant;
 
-import scala.Array;
-
-import java.util.ArrayList;
-import java.util.List;
-
 
 public class Constant {
 //  kafka集群地址
@@ -21,6 +16,11 @@ public class Constant {
     public static final String MYSQL_PASSWORD = "1234kxmall!@#ABC";
 //    监控的mysql数据库
     public static final String MYSQL_DATABASE = "real_gmall";
+
+//    mysql 同步到hbase的配置库
+    public static final String MYSQL2HBASE_CONFIG_DATABASE = "gmall2023_config";
+
+
 //    全量同步维度表
     public static final String TABLE_LIST[] =
     {
