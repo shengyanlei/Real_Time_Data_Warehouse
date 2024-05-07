@@ -19,7 +19,7 @@ public class FlinkSourceUtil_kafka {
                 .setBootstrapServers(Constant.KAFKA_BROKERS)
                 .setGroupId(groupId)
                 .setTopics(topic)
-                .setStartingOffsets(OffsetsInitializer.latest())
+                .setStartingOffsets(OffsetsInitializer.earliest())
                 .setValueOnlyDeserializer(new DeserializationSchema<String>() {
 
                     @Override
