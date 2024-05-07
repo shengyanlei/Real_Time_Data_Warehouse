@@ -18,7 +18,7 @@ public class Constant {
     public static final String MYSQL_DATABASE = "real_gmall";
 
 //    mysql 同步到hbase的配置库
-    public static final String MYSQL2HBASE_CONFIG_DATABASE = "gmall2023_config";
+    public static final String MYSQL2HBASE_CONFIG_DATABASE = "gmall2024_config";
 
 
 //    全量同步维度表
