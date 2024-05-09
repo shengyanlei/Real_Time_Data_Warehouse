@@ -30,6 +30,7 @@ public class Constant {
         "real_gmall.base_category1",
         "real_gmall.base_category2",
         "real_gmall.base_category3",
+        "real_gmall.base_dic",
         "real_gmall.base_province",
         "real_gmall.base_region",
         "real_gmall.base_trademark",
