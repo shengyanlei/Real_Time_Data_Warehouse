@@ -26,9 +26,8 @@ import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.co.BroadcastProcessFunction;
 import org.apache.flink.util.Collector;
-import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
-import org.apache.hadoop.hbase.util.Bytes;
+
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -36,9 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
+import static com.shyl.util.HbaseUtil.*;
+
 
 public class DimAPP extends BaseAPP {
-
 
     public static void main(String[] args) {
         new DimAPP().start(10011, 4, "dim_app", Constant.TOPIC_DB);
@@ -63,7 +63,7 @@ public class DimAPP extends BaseAPP {
         connect.keyBy(t -> t.f1.getSinkTable())
                 .map(new map()).print();
     }
-    private static class map implements Serializable, MapFunction<Tuple2<JSONObject, TableProcessDim>, Tuple2<JSONObject, TableProcessDim>> {
+    private class map implements Serializable, MapFunction<Tuple2<JSONObject, TableProcessDim>, Tuple2<JSONObject, TableProcessDim>> {
             @Override
             public Tuple2<JSONObject, TableProcessDim> map(Tuple2<JSONObject, TableProcessDim> value) throws Exception {
                 String HbaseTable = value.f1.getSinkTable();
@@ -72,62 +72,17 @@ public class DimAPP extends BaseAPP {
                 String[] keyColumns = value.f1.getSinkColumns().split(",");
                 String sinkRowKey = value.f0.getString(value.f1.getSinkRowKey());
                 if (value.f0.getString("op").equals("r")){
-                    insertToHbase(HbaseTable,sinkFamily,keyColumns,sinkRowKey,value.f0);
+                    insertHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkFamily,sinkRowKey,keyColumns,value.f0);
                 }else if(value.f0.getString("op").equals("u")){
-                    deleteToHbase(HbaseTable,sinkRowKey);
-                    insertToHbase(HbaseTable,sinkFamily,keyColumns,sinkRowKey,value.f0);
+                    deleteHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkRowKey);
+                    insertHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkFamily,sinkRowKey,keyColumns,value.f0);
                 }else{
-                    deleteToHbase(HbaseTable,sinkRowKey);
+                    deleteHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkRowKey);
                 }
 
                 return value;
             }
         }
-    private static void deleteToHbase(String hbaseTable, String sinkRowKey) {
-        try {
-            Connection hbaseConnection = HbaseUtil.getHbaseConnection();
-            Table table = hbaseConnection.getTable(TableName.valueOf("real_gmall:"+hbaseTable));
-            // 创建Delete对象，并指定行键
-            Delete delete = new Delete(Bytes.toBytes(sinkRowKey));
-
-            // 可以选择删除指定列族下的所有列
-            // delete.addFamily(Bytes.toBytes("your_column_family"));
-
-            // 也可以选择删除指定列族中的指定列
-//             delete.addColumn(Bytes.toBytes(sinkRowKey), Bytes.toBytes(keyColumns));
-            table.delete(delete);
-            Log.info("Hbase表:"+hbaseTable+"指定rowkey的数据"+sinkRowKey+"已经删除");
-            table.close();
-
-        } catch (Exception e) {
-            Log.info("Hbase表:"+hbaseTable+"指定rowkey的数据"+sinkRowKey+"删除失败");
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private static void insertToHbase(String hbaseTable, String sinkFamily, String[] keyColumns, String sinkRowKey, JSONObject f0) {
-        Connection connection;
-        try {
-            connection = HbaseUtil.getHbaseConnection();
-            Table table = connection.getTable(TableName.valueOf("real_gmall:"+hbaseTable));
-            Put put = new Put(Bytes.toBytes(sinkRowKey)); //指定行键
-//            添加列族，列名，列值
-            for (String keyColumn : keyColumns) {
-                //注意：如果字段为空，则不插入【插入空值，会出现空指针异常】
-                if (f0.getString(keyColumn) != null) {
-                    put.addColumn(Bytes.toBytes(sinkFamily), Bytes.toBytes(keyColumn), Bytes.toBytes(f0.getString(keyColumn)));
-                }
-            }
-            table.put(put);
-            HbaseUtil.closeHbaseConnection(connection);
-            Log.info("数据已经插入Hbase:"+hbaseTable+"中");
-
-        } catch (IOException e) {
-            Log.info("插入Hbase表失败:"+hbaseTable+":"+sinkRowKey);
-            e.printStackTrace();
-        }
-    }
 
     private SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> connect(SingleOutputStreamOperator<JSONObject> filterStream, SingleOutputStreamOperator<TableProcessDim> hbaseTable) {
         MapStateDescriptor<String, TableProcessDim> mapStateDescriptor = new MapStateDescriptor<>("table-process-dim", String.class, TableProcessDim.class);
