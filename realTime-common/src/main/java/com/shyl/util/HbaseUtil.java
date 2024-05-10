@@ -3,8 +3,6 @@ package com.shyl.util;
 
 import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.minlog.Log;
-import com.google.gson.JsonObject;
-import com.shyl.constant.Constant;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.hbase.Cell;
@@ -73,7 +71,7 @@ public class HbaseUtil {
                                      String family,
                                      String rowKey,
                                      String[] columns,
-                                     JSONObject value) {
+                                     JSONObject value) throws InterruptedException {
         Connection hbaseConnection = HbaseConnectionPool.getConnection();
         TableName tableName = TableName.valueOf(nameSpace, table);
         Table hbaseTable = null;
@@ -103,7 +101,7 @@ public class HbaseUtil {
     public static void deleteHbaseData(String nameSpace,
                                        String table,
                                        String rowKey,
-                                       String ... column) {
+                                       String ... column) throws InterruptedException {
         Connection hbaseConnection = HbaseConnectionPool.getConnection();
         TableName tableName = TableName.valueOf(nameSpace, table);
         Table hbaseTable = null;
