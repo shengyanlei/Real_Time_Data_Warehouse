@@ -23,6 +23,7 @@ util:
    1. FlinkSourceUtil_kafka:将kafka作为flink的数据源
    2. HbaseUtil:提供操作hbase的方法：包括hbase的连接，关闭，创建表，删除表，插入数据（在DimApp中），删除数据（在DimApp中），查询数据（未开发）等
    3. JDBCUtil:提供操作mysql的方法：包括mysql的连接，关闭，查询数据等  
+   4. HbaseConnectionPool:hbase的连接池，实现Hbase连接的获取，返回，关闭等操作，加快数据同步到hbase的速度。
 ### 子模块real_gmall_dim:维度层的搭建
 1.**维度层的设计**:  
 选用hbase数据库作为dim层容器，配合mysql配置表和flink-cdc实现维度数据的动态冷同步。因为hbase是一个分布式的NoSQL数据库，具有高可用性，高可扩展性，高容错性，高可读写性能。  
