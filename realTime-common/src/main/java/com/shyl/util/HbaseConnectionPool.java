@@ -1,57 +1,62 @@
 package com.shyl.util;
 
-import org.apache.hadoop.hbase.client.Connection;
 
-import java.util.List;
+import org.apache.hadoop.hbase.client.Connection;
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class HbaseConnectionPool {
     private static int maxSize = 10;
     private static int minSize = 5;
-    private static List<Connection> connectionList;
+    private static ConcurrentLinkedQueue<Connection> connectionQueue = new ConcurrentLinkedQueue<>();
+    private static Map<Connection, Long> connectionTimeMap = new ConcurrentHashMap<>();
+    private static long maxIdleTime = 1000 * 60 * 60;
 
     public HbaseConnectionPool() {
     }
-    public static Connection getConnection() {
-        if (connectionList.size() == 0) {
-            synchronized (HbaseConnectionPool.class) {
-                if (connectionList.size() == 0) {
-                    for (int i = 0; i < minSize; i++) {
-                        try {
-                            connectionList.add(HbaseUtil.getHbaseConnection());
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            }
+
+    public static Connection getConnection() throws InterruptedException {
+        if (connectionQueue.size() < maxSize) {
+            createConnections(minSize - connectionQueue.size());
+        } else {
+            Thread.sleep(1000); // Adjust the sleep time as needed
         }
-        return connectionList.remove(0);
+        Connection connection = connectionQueue.poll();
+        connectionTimeMap.put(connection, System.currentTimeMillis());
+        return connection;
     }
 
-    public static void closeConnection(Connection connection) {
-        if (connectionList.size() < maxSize) {
-            synchronized (HbaseConnectionPool.class) {
-                connectionList.add(connection);
-            }
-        } else {
+    private static void createConnections(int count) {
+        for (int i = 0; i < count; i++) {
             try {
-                HbaseUtil.closeHbaseConnection(connection);
+                Connection connection = HbaseUtil.getHbaseConnection();
+                connectionQueue.offer(connection);
+                connectionTimeMap.put(connection, System.currentTimeMillis());
             } catch (Exception e) {
                 e.printStackTrace();
             }
         }
     }
+
+    public static void closeConnection(Connection connection) throws IOException {
+        HbaseUtil.closeHbaseConnection(connection);
+        connectionTimeMap.remove(connection);
+    }
+
     public static void retrunConnection(Connection connection) {
-        if (connectionList.size() < maxSize) {
-            synchronized (HbaseConnectionPool.class) {
-                connectionList.add(connection);
-            }
+        if (connectionTimeMap.containsKey(connection) &&
+                System.currentTimeMillis() - connectionTimeMap.get(connection) < maxIdleTime &&
+                connectionQueue.size() < maxSize) {
+            connectionQueue.offer(connection);
         } else {
             try {
-                HbaseUtil.closeHbaseConnection(connection);
-            } catch (Exception e) {
+                closeConnection(connection);
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 }
+
