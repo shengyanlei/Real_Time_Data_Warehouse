@@ -8,8 +8,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class HbaseConnectionPool {
-    private static int maxSize = 10;
-    private static int minSize = 5;
+    private static int maxSize = 25;
+    private static int minSize = 15;
     private static ConcurrentLinkedQueue<Connection> connectionQueue = new ConcurrentLinkedQueue<>();
     private static Map<Connection, Long> connectionTimeMap = new ConcurrentHashMap<>();
     private static long maxIdleTime = 1000 * 60 * 60;
