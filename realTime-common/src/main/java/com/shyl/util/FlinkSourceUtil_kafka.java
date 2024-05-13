@@ -14,12 +14,18 @@ import java.nio.charset.StandardCharsets;
 
 //KAFKA作为flink 的ods层数据，即flink程序中的source
 public class FlinkSourceUtil_kafka {
-    public static KafkaSource <String> getKafkaSource(String groupId, String topic){
+    public static KafkaSource <String> getKafkaSource(String groupId, String topic ,int ... enums){
+        OffsetsInitializer offset;
+        if (enums != null) {
+            offset = OffsetsInitializer.earliest();
+        }else{
+            offset = OffsetsInitializer.latest();
+        }
         return KafkaSource.<String>builder()
                 .setBootstrapServers(Constant.KAFKA_BROKERS)
                 .setGroupId(groupId)
                 .setTopics(topic)
-                .setStartingOffsets(OffsetsInitializer.earliest())
+                .setStartingOffsets(offset)
                 .setValueOnlyDeserializer(new DeserializationSchema<String>() {
 
                     @Override
