@@ -60,7 +60,8 @@ public class DimAPP extends BaseAPP {
 
     private void witeToHbase(SingleOutputStreamOperator<Tuple2<JSONObject, TableProcessDim>> connect) {
         connect.print("data:");
-        connect.keyBy(t -> t.f1.getSinkTable())
+        connect
+//                .keyBy(t -> t.f1.getSinkTable())
                 .map(new map()).print();
     }
     private class map implements Serializable, MapFunction<Tuple2<JSONObject, TableProcessDim>, Tuple2<JSONObject, TableProcessDim>> {
@@ -71,7 +72,7 @@ public class DimAPP extends BaseAPP {
                 String sinkFamily = value.f1.getSinkFamily();
                 String[] keyColumns = value.f1.getSinkColumns().split(",");
                 String sinkRowKey = value.f0.getString(value.f1.getSinkRowKey());
-                if (value.f0.getString("op").equals("r")){
+                if (value.f0.getString("op").equals("r") || value.f0.getString("op").equals("c")){
                     insertHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkFamily,sinkRowKey,keyColumns,value.f0);
                 }else if(value.f0.getString("op").equals("u")){
                     deleteHbaseData(Constant.HBASE_NAMESPACE,HbaseTable,sinkRowKey);
@@ -161,16 +162,16 @@ public class DimAPP extends BaseAPP {
                     JSONObject jsonObj = JSON.parseObject(s);
                     String db = jsonObj.getJSONObject("source").getString("db");
                     String op = jsonObj.getString("op");
+                    System.out.println(op);
                     String before = jsonObj.getString("before");
                     String after = jsonObj.getString("after");
                     return Constant.MYSQL_DATABASE.equals(db)
                             && ("r".equals(op)) // 读取
                             || ("u".equals(op)) // 更新
                             || ("d".equals(op)) // 删除
+                            || ("c".equals(op)) // 创建
                             && before != null
-                            || after != null
-                            && before.length() != 0
-                            || after.length() != 0;
+                            || after != null;
                 } catch (Exception e) {
                     Log.warn("不是正确的json格式" + s);
                     return false;
