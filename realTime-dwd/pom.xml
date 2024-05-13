@@ -8,10 +8,12 @@
     </parent>
 
     <artifactId>realTime-dwd</artifactId>
-    <packaging>jar</packaging>
-
-    <name>realTime-ads</name>
+    <packaging>pom</packaging>
+    <name>realTime-dwd</name>
     <url>http://maven.apache.org</url>
+    <modules>
+        <module>realtime-dwd-base-log</module>
+    </modules>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
